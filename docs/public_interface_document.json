@@ -1,7 +1,7 @@
 {
   "package_name": "com.walturn.my_app",
-  "project_description": "The Flutter application follows the Stacked architecture, featuring routing, dependency injection, and dialog/bottom sheet management. It includes a startup screen, a home screen with a counter, a dialog, and a bottom sheet. The application also integrates with Firebase for analytics tracking and supports localization and multiple flavors (development and production).",
-  "architecture_overview": "The application is structured using the Stacked architecture, which separates the concerns of the UI, view models, and services. It uses Stacked for state management, routing, and dependency injection. The main components include the App, AppView, and various feature-specific views and view models. The application also utilizes services for managing dialogs, bottom sheets, and navigation, as well as observing screen transitions for analytics purposes.",
+  "project_description": "A Flutter mobile application following the Stacked architecture, providing a feature-rich startup experience with localization, multi-flavor support, and Firebase integration. The app includes a startup screen, a home screen with a counter functionality, custom dialog and bottom sheet implementations, and robust analytics tracking. Key features include platform-agnostic navigation, dependency injection, responsive UI components, and environment-specific configurations.",
+  "architecture_overview": "The application is structured using the Stacked (MVVM) architecture with clear separation of concerns. It utilizes dependency injection through the service locator pattern, leverages Stacked services for navigation and UI interactions, and implements modular components with view models managing business logic. The architecture supports multiple environments (development/production) and provides extensible patterns for adding new features and services.",
   "files": [
     {
       "name": "lib/app/app.dart",
@@ -840,6 +840,37 @@
         "package:stacked/stacked.dart",
         "package:stacked_services/stacked_services.dart"
       ]
+    },
+    {
+      "name": "lib/services/shared_prefs_service.dart",
+      "description": "A service for managing persistent local storage using SharedPreferences, specifically focused on saving and retrieving a counter value with robust error handling",
+      "class_diagram": "@startuml\nclass SharedPrefsService {\n  -_prefs: SharedPreferences\n  +saveCounter(value: int)\n  +getCounter(): int\n  +init()\n}\n@enduml",
+      "methods": [
+        {
+          "name": "saveCounter",
+          "description": "Persists an integer value to local device storage, used for maintaining application state across sessions",
+          "parameters": [
+            "int value"
+          ],
+          "return_type": "Future<void>"
+        },
+        {
+          "name": "getCounter",
+          "description": "Retrieves the previously saved counter value from local storage, returning a default of 0 if no value exists",
+          "parameters": null,
+          "return_type": "Future<int>"
+        },
+        {
+          "name": "init",
+          "description": "Initializes the SharedPreferences instance, enabling local storage operations",
+          "parameters": null,
+          "return_type": "Future<void>"
+        }
+      ],
+      "dependencies": [
+        "shared_preferences.dart",
+        "stacked/stacked_annotations.dart"
+      ]
     }
   ],
   "dependencies": [
@@ -864,7 +895,7 @@
       "purpose": "Creating gaps in layouts"
     }
   ],
-  "sequence_diagram": "@startuml\nactor User\nparticipant main\nparticipant AppView\nparticipant StartupView\nparticipant StartupViewModel\nparticipant HomeView\nparticipant HomeViewModel\n\nUser -> main: Launch app\nmain -> AppView: Create and run\nAppView -> StartupView: Initialize\nStartupView -> StartupViewModel: Run startup logic\nStartupViewModel -> HomeView: Navigate on completion\nHomeView -> HomeViewModel: Initialize\nUser -> HomeView: Interact\nHomeView -> HomeViewModel: Handle user actions\nHomeViewModel -> HomeView: Update UI\nHomeViewModel -> DialogService: Show dialog\nHomeViewModel -> BottomSheetService: Show bottom sheet\n@enduml",
-  "state_management_flow": "The application uses the Stacked architecture for state management. Each view has a corresponding ViewModel that handles the business logic and state for that view. The ViewModels are responsible for updating the UI, interacting with services (e.g., DialogService, BottomSheetService), and managing the application's overall state. The app.locator.dart file sets up the necessary dependency injections, allowing the ViewModels to access the required services.",
-  "navigation_flow": "The application's navigation is managed using the Stacked Router, defined in app.router.dart. The main entry point is the AppView, which initializes the Stacked architecture and displays the StartupView. After the startup logic is completed, the StartupViewModel navigates to the HomeView. The HomeView allows the user to interact with the application, triggering updates to the HomeViewModel, which in turn updates the UI and can show dialogs or bottom sheets as needed."
+  "sequence_diagram": "@startuml\nactor User\nparticipant AppView\nparticipant StartupViewModel\nparticipant NavigationService\nparticipant HomeViewModel\nparticipant AnalyticService\n\nUser -> AppView: Launch App\nAppView -> StartupViewModel: Initialize\nStartupViewModel -> AnalyticService: Track Startup\nStartupViewModel -> NavigationService: Navigate to HomeView\nHomeViewModel -> AnalyticService: Track Screen View\nUser -> HomeViewModel: Increment Counter\nHomeViewModel -> AnalyticService: Log User Action\n@enduml",
+  "state_management_flow": "State management is handled through the Stacked framework's reactive view models. Each view (StartupView, HomeView) has a corresponding ViewModel that extends BaseViewModel, allowing reactive UI updates. State changes trigger automatic UI rebuilds, with services like SharedPrefsService enabling persistent state storage. Dependency injection in app.locator.dart ensures services are centrally managed and easily accessible across the application.",
+  "navigation_flow": "Navigation is managed via the Stacked router (app.router.dart), which defines routes like StartupView and HomeView. The NavigationService handles screen transitions, with the StartupViewModel triggering navigation after initial startup logic. The ScreenObserver intercepts navigation events for analytics tracking, providing a comprehensive navigation management approach that supports programmatic and user-initiated route changes."
 }
